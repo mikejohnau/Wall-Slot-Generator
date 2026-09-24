@@ -2,7 +2,7 @@
 
 ## Overview
 
-Wall Slot Generator creates parametric slot-wall panels directly inside Fusion 360.
+Wall Slot Generator creates parametric slot-wall panels directly inside Autodesk® Fusion®.
 You provide three dimensions and the add-in handles everything else — slot size,
 spacing, row and column count — producing a fully cut solid body in a single click.
 The result drops straight into your existing design as a named component, ready for
@@ -13,9 +13,11 @@ CAM, rendering, assembly, or export.
 ## Typical workflow
 
 ```
-Open a Fusion 360 design  (Design workspace)
+Open a Fusion design  (Design workspace)
         ↓
 Click Wall Slot Generator  (toolbar → Add-Ins → Wall Slot Generator)
+        ↓
+Subscription is confirmed  (or subscribe, then choose Check again)
         ↓
 Enter wall dimensions and choose a pattern
         ↓
@@ -51,13 +53,18 @@ add-in to open the panel.
 ### Subscription
 
 Wall Slot Generator is sold on the Autodesk App Store as a monthly or yearly
-subscription. Opening the panel asks Autodesk, once per Fusion session, whether
-the signed-in account's subscription is active. **Generate wall** stays
-available while it is.
+subscription. Use the same Autodesk account in Fusion that you use to subscribe.
 
-If that check fails because you are offline, a subscription confirmed in the
-last 7 days still allows generation. After that, connect to the internet and
-choose **Check again** in the panel. **Subscribe** opens the App Store listing.
+Opening the panel asks Autodesk once per Fusion session whether that account's
+subscription is active. **Generate wall** is available while it is.
+
+**Subscribe** in the panel opens the App Store listing. Payment finishes on
+Autodesk's site. Fusion is not notified when it completes, so choose
+**Check again** in the panel. When the subscription is active, the notice
+closes and **Generate wall** turns on.
+
+If you are offline, a subscription confirmed in the last 7 days still allows
+generation. After that, connect to the internet and choose **Check again**.
 
 ### 2. Set your wall dimensions
 
@@ -122,6 +129,8 @@ Click **Generate wall**. Fusion creates a component named **Wall Slot Panel**
 containing the wall body with all slots cut through. The status bar confirms
 success, or shows an error message if something went wrong.
 
+**Generate wall** stays disabled until the subscription check succeeds.
+
 ### 7. Iterate
 
 To change any parameter — dimensions, pattern, density — simply adjust the
@@ -132,7 +141,7 @@ replaced automatically. No undo step needed.
 
 ## Where the generated component fits in your design
 
-The wall appears in the **Fusion 360 browser** (left panel) under:
+The wall appears in the **Fusion browser** (left panel) under:
 
 ```
 Components
