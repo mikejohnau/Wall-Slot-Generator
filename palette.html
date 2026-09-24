@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+       font-size: 13px; color: #2c2c2a; background: #f0ede8; }
+
+.panel { padding: 14px 14px 10px; }
+
+/* Header */
+.hdr { display: flex; align-items: center; gap: 11px; margin-bottom: 13px;
+        padding-bottom: 12px; border-bottom: 1px solid #d8d4cc; }
+.hdr-text h1 { font-size: 16px; font-weight: 700; color: #1a1a18; line-height: 1.1; }
+.hdr-text p  { font-size: 11px; color: #888; margin-top: 3px; }
+
+/* Sections */
+.section { background: #fff; border: 1px solid #ddd; border-radius: 8px;
+           padding: 11px 13px; margin-bottom: 9px; }
+.stitle  { font-size: 10.5px; font-weight: 700; color: #888;
+           text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 9px; }
+.grid2   { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+
+.field label { display: block; font-size: 11px; color: #666; margin-bottom: 3px; }
+.unit { position: relative; }
+.unit input  { width: 100%; padding: 6px 28px 6px 8px; border: 1px solid #ccc;
+               border-radius: 5px; font-size: 13px; background: #fafaf8; outline: none; }
+.unit input:focus { border-color: #5b9cf6; }
+.unit::after { content: "mm"; position: absolute; right: 8px; top: 50%;
+               transform: translateY(-50%); font-size: 11px; color: #aaa; pointer-events: none; }
+
+select { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 5px;
+         font-size: 13px; background: #fafaf8; outline: none; }
+select:focus { border-color: #5b9cf6; }
+
+/* Toggle */
+.tog-row { display: flex; align-items: center; gap: 10px; margin-top: 9px; }
+.tog      { width: 34px; height: 19px; background: #ccc; border-radius: 10px;
+            position: relative; cursor: pointer; transition: background .18s; flex-shrink: 0; }
+.tog.on   { background: #5b9cf6; }
+.tog::after { content: ""; position: absolute; width: 15px; height: 15px;
+              background: #fff; border-radius: 50%; top: 2px; left: 2px;
+              transition: left .18s; box-shadow: 0 1px 3px #0002; }
+.tog.on::after { left: 17px; }
+.tog-row label { font-size: 13px; color: #444; cursor: pointer; }
+
+/* Preview */
+.prev-wrap { background: #fff; border: 1px solid #ddd; border-radius: 8px;
+             padding: 11px 13px; margin-bottom: 9px; }
+.prev-head { display: flex; align-items: center; justify-content: space-between;
+             margin-bottom: 8px; }
+.prev-head span { font-size: 10.5px; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: .05em; }
+.prev-tag  { font-size: 11px; font-weight: 600; color: #5b9cf6;
+             background: #eef4ff; border: 1px solid #c5d9f8; border-radius: 4px;
+             padding: 2px 7px; }
+#pattern-svg { display: block; width: 100%; border-radius: 5px;
+               background: #e8e5de; overflow: visible; }
+.legend  { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #555; }
+.leg-dot  { width: 16px; height: 8px; border-radius: 4px; flex-shrink: 0; }
+
+/* Calc text */
+.calc { background: #f0f5ff; border: 1px solid #c8d8f8; border-radius: 8px;
+        padding: 10px 13px; margin-bottom: 9px; min-height: 60px;
+        font-size: 13px; line-height: 1.7; color: #2c2c2a; }
+.calc b    { font-weight: 700; color: #1a1a18; }
+.calc .bad { color: #c0392b; font-weight: 600; }
+
+/* Buttons */
+.btns { display: flex; gap: 8px; }
+.btn  { flex: 1; padding: 10px; border: none; border-radius: 6px;
+        font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity .15s; }
+.btn:hover { opacity: .86; }
+.btn-gen  { background: #5b9cf6; color: #fff; }
+.btn-gen:disabled { background: #bbb; cursor: not-allowed; opacity: 1; }
+.btn-cls  { background: #e4e1da; color: #555; }
+.status   { font-size: 11px; text-align: center; min-height: 16px; margin-top: 7px; color: #888; }
+.status.ok  { color: #27ae60; font-weight: 600; }
+.status.err { color: #c0392b; }
+</style>
+</head>
+<body>
+<div class="panel">
+
+  <!-- Header -->
+  <div class="hdr">
+    <svg width="40" height="40" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+      <rect width="64" height="64" rx="13" fill="#1a2e48"/>
+      <rect x="3" y="3" width="58" height="58" rx="10.5" fill="none" stroke="#fff" stroke-width=".75" stroke-opacity=".14"/>
+      <rect x="7"  y="8"  width="22" height="8" rx="4" fill="#5b9cf6"/>
+      <rect x="35" y="8"  width="22" height="8" rx="4" fill="#5b9cf6"/>
+      <rect x="10" y="18" width="8"  height="8" rx="4" fill="#93c4fb"/>
+      <rect x="21" y="18" width="22" height="8" rx="4" fill="#5b9cf6"/>
+      <rect x="46" y="18" width="8"  height="8" rx="4" fill="#93c4fb"/>
+      <rect x="7"  y="28" width="22" height="8" rx="4" fill="#5b9cf6"/>
+      <rect x="35" y="28" width="22" height="8" rx="4" fill="#5b9cf6"/>
+      <rect x="10" y="38" width="8"  height="8" rx="4" fill="#93c4fb"/>
+      <rect x="21" y="38" width="22" height="8" rx="4" fill="#5b9cf6"/>
+      <rect x="46" y="38" width="8"  height="8" rx="4" fill="#93c4fb"/>
+      <rect x="7"  y="48" width="22" height="8" rx="4" fill="#5b9cf6"/>
+      <rect x="35" y="48" width="22" height="8" rx="4" fill="#5b9cf6"/>
+    </svg>
+    <div class="hdr-text" style="flex:1">
+      <h1>Wall Slot Generator</h1>
+      <p>Parametric slot panel · Fusion 360</p>
+    </div>
+    <button onclick="showHelp()" title="Usage guide" style="background:#e4e1da;border:none;border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer;flex-shrink:0;font-weight:700;color:#555">?</button>
+  </div>
+
+  <!-- Wall dimensions -->
+  <div class="section">
+    <div class="stitle">Wall</div>
+    <div class="grid2">
+      <div class="field"><label>Width</label><div class="unit">
+        <input type="number" id="wall_w" value="220" min="20" step="1" oninput="update()"></div></div>
+      <div class="field"><label>Height</label><div class="unit">
+        <input type="number" id="wall_h" value="60" min="20" step="1" oninput="update()"></div></div>
+      <div class="field"><label>Thickness</label><div class="unit">
+        <input type="number" id="wall_t" value="5" min="1" step="0.5" oninput="update()"></div></div>
+      <div class="field"><label>Border width</label><div class="unit">
+        <input type="number" id="border_w" value="8" min="0" step="1" oninput="update()"></div></div>
+    </div>
+  </div>
+
+  <!-- Design -->
+  <div class="section">
+    <div class="stitle">Design</div>
+    <div class="field">
+      <label>Pattern type</label>
+      <select id="design" onchange="update()">
+        <option value="1">Design 1 — rows + inter-rows</option>
+        <option value="2">Design 2 — brick offset</option>
+      </select>
+    </div>
+    <div class="field" style="margin-top:2px">
+      <label style="display:flex;justify-content:space-between;align-items:center">
+        <span>Slot spacing</span>
+        <span id="spk-tag" class="prev-tag" style="font-size:10px">Loose</span>
+      </label>
+      <input type="range" id="density" min="0" max="100" value="57" step="1"
+             style="width:100%;margin:5px 0 3px"
+             oninput="onDensityInput(this.value)"
+             onchange="onDensitySnap(this)">
+      <div style="position:relative;height:14px;font-size:10px;color:#aaa">
+        <span style="position:absolute;left:0">Open</span>
+        <span style="position:absolute;left:calc(57% - 14px)">Loose</span>
+        <span style="position:absolute;left:calc(86% - 14px)">Tight</span>
+        <span style="position:absolute;right:0">Dense</span>
+      </div>
+    </div>
+    <div class="tog-row" id="half-row" style="display:none">
+      <div class="tog" id="tog" onclick="toggleHalf()"></div>
+      <label onclick="toggleHalf()">Half-slots at row ends</label>
+    </div>
+    <div class="field" style="margin-top:10px">
+      <label>Slot orientation</label>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <button id="btn-h" onclick="setOrientation('horizontal')"
+          style="flex:1;padding:6px;border-radius:5px;border:1.5px solid #5b9cf6;
+                 background:#5b9cf6;color:#fff;font-size:12px;font-weight:600;cursor:pointer">
+          Horizontal</button>
+        <button id="btn-v" onclick="setOrientation('vertical')"
+          style="flex:1;padding:6px;border-radius:5px;border:1.5px solid #ccc;
+                 background:#f5f4f0;color:#555;font-size:12px;font-weight:600;cursor:pointer">
+          Vertical</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="tile-section">
+    <div class="stitle">Tile array</div>
+    <div class="grid2">
+      <div class="field"><label>Columns</label>
+        <input type="number" id="tile_cols" value="1" min="1" max="20" step="1"
+               style="width:100%;padding:6px 8px;border:1px solid #ccc;border-radius:5px;font-size:13px;background:#fafaf8"
+               oninput="update()"></div>
+      <div class="field"><label>Rows</label>
+        <input type="number" id="tile_rows" value="1" min="1" max="20" step="1"
+               style="width:100%;padding:6px 8px;border:1px solid #ccc;border-radius:5px;font-size:13px;background:#fafaf8"
+               oninput="update()"></div>
+    </div>
+    <div class="field" style="margin-top:8px">
+      <label>Gap between tiles (mm)</label>
+      <div class="unit"><input type="number" id="tile_gap" value="0" min="-100" step="1" oninput="update()"></div>
+    </div>
+    <div id="tile-note" style="display:none;font-size:10px;color:#e85820;margin-top:6px">
+      Tiling requires an Assembly document.
+    </div>
+  </div>
+
+  <!-- Pattern preview -->
+  <div class="prev-wrap">
+    <div class="prev-head">
+      <span>Pattern preview</span>
+      <span class="prev-tag" id="design-tag">Design 1</span>
+    </div>
+    <svg id="pattern-svg" viewBox="0 0 480 180" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <!-- Calculated layout -->
+  <div class="calc" id="calc">Enter dimensions above.</div>
+
+  <div id="sub-note" style="display:none;margin-bottom:10px;padding:10px 12px;background:#fff6ee;border:1px solid #f0d2bc;border-radius:8px;font-size:12px;line-height:1.5;color:#5c3b24">
+    <div id="sub-msg"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button type="button" class="btn btn-gen" style="padding:7px" onclick="openStore()">Subscribe</button>
+      <button type="button" class="btn btn-cls" style="padding:7px" onclick="recheckLicense()">Check again</button>
+    </div>
+  </div>
+
+  <!-- Buttons & status -->
+  <div class="btns">
+    <button class="btn btn-gen" id="btn-gen" onclick="generate()">Generate wall</button>
+    <button class="btn btn-cls" onclick="closePanel()">Close</button>
+  </div>
+  <div class="status" id="status"></div>
+  <div style="text-align:center;margin-top:6px">
+    <a onclick="showPrivacy()" style="font-size:10px;color:#aaa;cursor:pointer;text-decoration:underline">
+      Privacy policy
+    </a>
+  </div>
+</div>
+
+<!-- Help overlay -->
+<div id="help-overlay" style="display:none;position:absolute;inset:0;background:var(--bg,#f0ede8);overflow-y:auto;padding:16px;z-index:100">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #d8d4cc">
+    <button onclick="hideHelp()" style="background:#e4e1da;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-size:12px">← Back</button>
+    <span style="font-size:14px;font-weight:600;color:#1a1a18">How to use</span>
+  </div>
+  <div style="font-size:12px;line-height:1.7;color:#444">
+
+    <h3 style="font-size:12px;font-weight:700;color:#1a1a18;margin:0 0 8px">Workflow</h3>
+    <ol style="margin:0 0 14px;padding-left:18px">
+      <li style="margin-bottom:4px">Enter your <strong>wall dimensions</strong> — width, height, thickness and border width</li>
+      <li style="margin-bottom:4px">Choose a <strong>pattern type</strong> and adjust the <strong>slot spacing</strong> slider</li>
+      <li style="margin-bottom:4px">Check the <strong>live preview</strong> and calculated layout</li>
+      <li style="margin-bottom:4px">Click <strong>Generate wall</strong> — a component named <em>Wall Slot Panel</em> is created</li>
+      <li style="margin-bottom:4px">To iterate: change any value and click Generate again — the previous wall is replaced automatically</li>
+    </ol>
+
+    <h3 style="font-size:12px;font-weight:700;color:#1a1a18;margin:0 0 8px">Pattern types</h3>
+    <p style="margin:0 0 6px"><strong>Design 1 — Rows + inter-rows</strong><br>
+    Large stadium slots in full-width rows, with a [small · large · small] triplet row nestled between each pair. Maximum slot count. Best for tool walls and display panels.</p>
+    <p style="margin:0 0 14px"><strong>Design 2 — Brick offset</strong><br>
+    Rows of identical slots offset by half a pitch on alternate rows. Optional half-slots (one flat end) fill the ends of offset rows. Best for cabinet backs and architectural screening.</p>
+
+    <h3 style="font-size:12px;font-weight:700;color:#1a1a18;margin:0 0 8px">Slot spacing slider</h3>
+    <p style="margin:0 0 14px">Drag left for larger gaps and fewer slots (decorative / open feel), right for tighter packing and more slots. <strong>Loose</strong> (≈57%) matches classic slatwall proportions. <strong>Tight</strong> (≈86%) gives maximum hook density.</p>
+
+    <h3 style="font-size:12px;font-weight:700;color:#1a1a18;margin:0 0 8px">Border width</h3>
+    <p style="margin:0 0 14px">Sets the gap from the wall edge to the start of the slot field on all four sides. Set to 0 for no border. A 20–30mm border makes a sturdy mounting flange for screw-fixing to a wall or cabinet.</p>
+
+    <h3 style="font-size:12px;font-weight:700;color:#1a1a18;margin:0 0 8px">Multiple panels in one design</h3>
+    <p style="margin:0 0 14px">Generate a panel, then <strong>rename the component</strong> in the browser (right-click → Rename) before you click <strong>Wall Slot Generator</strong> and generate again. Generate only replaces the component named <em>Wall Slot Panel</em> — renamed components are left untouched.</p>
+
+    <h3 style="font-size:12px;font-weight:700;color:#1a1a18;margin:0 0 8px">After generating</h3>
+    <ul style="margin:0 0 6px;padding-left:18px">
+      <li style="margin-bottom:4px"><strong>CAM:</strong> Switch to Manufacture workspace — slot profiles work directly with 2D Pocket and 2D Contour operations</li>
+      <li style="margin-bottom:4px"><strong>3D print:</strong> Export as STL or 3MF via File → Export</li>
+      <li style="margin-bottom:4px"><strong>Laser / CNC:</strong> Export DXF from the sketch or Drawings workspace</li>
+      <li style="margin-bottom:4px"><strong>Assembly:</strong> Use Joint or As-Built Joint to position the panel in a larger design</li>
+      <li style="margin-bottom:4px"><strong>Material:</strong> Right-click the body → Appearance to assign timber, MDF, aluminium, etc.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Privacy overlay -->
+<div id="privacy-overlay" style="display:none;position:absolute;inset:0;background:var(--bg,#f0ede8);overflow-y:auto;padding:16px;z-index:100">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #d8d4cc">
+    <button onclick="hidePrivacy()" style="background:#e4e1da;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-size:12px">← Back</button>
+    <span style="font-size:14px;font-weight:600;color:#1a1a18">Privacy policy</span>
+  </div>
+  <div style="font-size:12px;line-height:1.7;color:#444;max-width:480px">
+    <p style="margin-bottom:8px"><strong>Publisher:</strong> Michael, M2 Design<br>
+    <strong>Effective date:</strong> 24 September 2026</p>
+
+    <h3 style="font-size:12px;font-weight:700;margin:14px 0 6px;color:#1a1a18">1. Data collected and how it is used</h3>
+    <p style="margin-bottom:8px">Wall Slot Generator stores your last-used panel settings (wall dimensions, design type, packing density, half-ends toggle) as <strong>Fusion 360 document attributes on your local machine</strong>. Those values only pre-populate the panel the next time you open it in the same document.</p>
+    <p style="margin-bottom:8px">Once each Fusion session, the add-in sends your Autodesk user id and this app's id to Autodesk (<code style="font-size:11px;background:#e8e5de;padding:1px 4px;border-radius:3px">apps.autodesk.com</code>) to check that your monthly or yearly subscription is active. A successful check is cached on this computer for up to 7 days so generation can continue offline. No wall dimensions or design data are sent.</p>
+
+    <h3 style="font-size:12px;font-weight:700;margin:14px 0 6px;color:#1a1a18">2. Third parties</h3>
+    <p style="margin-bottom:8px">The subscription check is sent only to Autodesk's App Store entitlement service. This add-in has no analytics, advertising, or other third-party services.</p>
+
+    <h3 style="font-size:12px;font-weight:700;margin:14px 0 6px;color:#1a1a18">3. Data retention and deletion</h3>
+    <p style="margin-bottom:8px">Preferences persist as Fusion 360 document attributes for as long as the document exists. They are removed when you delete the document, or by uninstalling the add-in.</p>
+
+    <h3 style="font-size:12px;font-weight:700;margin:14px 0 6px;color:#1a1a18">4. Revoking consent and requesting deletion</h3>
+    <p style="margin-bottom:8px">No data is held remotely. To remove all locally stored data: delete or close the Fusion 360 document, or remove the <code style="font-size:11px;background:#e8e5de;padding:1px 4px;border-radius:3px">wall_slots</code> folder from your Fusion 360 AddIns directory.</p>
+    <p style="margin-bottom:8px">For privacy questions: <strong>[your contact email]</strong></p>
+
+    <p style="margin-top:14px;font-size:10px;color:#aaa">This policy applies solely to Wall Slot Generator. Autodesk Fusion 360 has its own privacy policy at autodesk.com.</p>
+  </div>
+</div>
+<script>
+// ── Density → packing ─────────────────────────────────────────────
+// h = ¼ × (⅛)^(d/100)  →  Loose at d=33, Tight at d=67 exactly
+function densityToPack(d) {
+  const h = 0.25 - (0.25 - 0.03125) * d / 100;
+  return {h, v: h * 0.75, s: 0.25};
+}
+function pack() { return densityToPack(+sv('density')); }
+function densityLabel(d) {
+  const n = +d;
+  if (n <= 5)               return 'Open';
+  if (Math.abs(n-57) <= 4) return 'Loose';
+  if (Math.abs(n-86) <= 4) return 'Tight';
+  if (n >= 95)              return 'Dense';
+  return 'Custom';
+}
+let halfEnds = false;
+let orientation = 'horizontal';
+
+function setOrientation(o) {
+  orientation = o;
+  const bh = document.getElementById('btn-h');
+  const bv = document.getElementById('btn-v');
+  if (o === 'horizontal') {
+    bh.style.background='#5b9cf6'; bh.style.color='#fff'; bh.style.borderColor='#5b9cf6';
+    bv.style.background='#f5f4f0'; bv.style.color='#555'; bv.style.borderColor='#ccc';
+  } else {
+    bv.style.background='#5b9cf6'; bv.style.color='#fff'; bv.style.borderColor='#5b9cf6';
+    bh.style.background='#f5f4f0'; bh.style.color='#555'; bh.style.borderColor='#ccc';
+  }
+  update();
+}
+
+function v(id) { return +document.getElementById(id).value || 0; }
+function sv(id) { return document.getElementById(id).value; }
+
+// ── Solvers ──────────────────────────────────────────────────────
+function solve1(aw,ah,pk) {
+  const {h,v,s}=pk;
+  let best=null,bs=-1,t=aw/7;
+  for(let nr=1;nr<9;nr++){
+    let dh=2*h+(2*nr-1)*s+(2*nr-2)*v; if(dh<=0) continue;
+    let sfh=ah/dh;
+    for(let nc=2;nc<32;nc+=2){
+      let sf=Math.min(aw/(nc*(1+h)+h),sfh);
+      if(sf<12) continue;
+      let hg=sf*h,sh=sf*s,vg=sf*v;
+      let wu=nc*(sf+hg)+hg,hu=2*hg+(2*nr-1)*sh+(2*nr-2)*vg;
+      if(wu>aw+.01||hu>ah+.01) continue;
+      let fw=wu/aw,fh=hu/ah;
+      let sc=Math.min(fw,fh)*.4+Math.min(fw,fh)/Math.max(fw,fh)*.2+1/(1+Math.abs(sf/t-1))*.4;
+      if(sc>bs){bs=sc;best={nc,nr,sf,hg,sh,vg};}
+    }
+  }
+  return best;
+}
+
+function solve2(aw,ah,pk) {
+  const {h,v,s}=pk;
+  let best=null,bs=-1,t=aw/7;
+  for(let nr=1;nr<12;nr++){
+    let dh=2*h+nr*s+(nr-1)*v; if(dh<=0) continue;
+    let sfh=ah/dh;
+    for(let nc=2;nc<32;nc++){
+      let sf=Math.min(aw/(nc*(1+h)+h),sfh);
+      if(sf<12) continue;
+      let hg=sf*h,sh=sf*s,vg=sf*v;
+      let wu=nc*(sf+hg)+hg,hu=2*hg+nr*sh+(nr-1)*vg;
+      if(wu>aw+.01||hu>ah+.01) continue;
+      let fw=wu/aw,fh=hu/ah;
+      let sc=Math.min(fw,fh)*.4+Math.min(fw,fh)/Math.max(fw,fh)*.2+1/(1+Math.abs(sf/t-1))*.4;
+      if(sc>bs){bs=sc;best={nc,nr,sf,hg,sh,vg};}
+    }
+  }
+  return best;
+}
+
+// ── Toggle ───────────────────────────────────────────────────────
+function onDensityInput(d) {
+  document.getElementById('spk-tag').textContent = densityLabel(d);
+  update();
+}
+function onDensitySnap(el) {
+  const d = +el.value;
+  const snapped = Math.abs(d-57)<=5 ? 57 : Math.abs(d-86)<=5 ? 86 : d;
+  if (snapped !== d) { el.value = snapped; }
+  onDensityInput(el.value);
+}
+function toggleHalf() {
+  halfEnds = !halfEnds;
+  document.getElementById('tog').classList.toggle('on', halfEnds);
+  update();
+}
+
+// ── Main update ──────────────────────────────────────────────────
+function update() {
+  const ww=v('wall_w'),wh=v('wall_h'),bw=v('border_w'),d=+sv('design');
+  const aw=ww-2*bw,ah=wh-2*bw;
+  const btn=document.getElementById('btn-gen');
+  const halfRow=document.getElementById('half-row');
+  const tag=document.getElementById('design-tag');
+
+  halfRow.style.display = d===2 ? 'flex' : 'none';
+  tag.textContent = (d===1 ? 'Design 1' : 'Design 2') + ' · ' + densityLabel(+sv('density'));
+  const tileNote = document.getElementById('tile-note');
+  if (tileNote) {
+    const tc = +(document.getElementById('tile_cols')||{value:1}).value;
+    const tr = +(document.getElementById('tile_rows')||{value:1}).value;
+    tileNote.style.display = (tc>1||tr>1) ? 'block' : 'none';
+  }
+
+  drawPreview(ww,wh,bw,d,aw,ah);
+  updateCalc(ww,wh,bw,d,aw,ah,btn);
+}
+
+// ── Calc text ────────────────────────────────────────────────────
+function updateCalc(ww,wh,bw,d,aw,ah,btn) {
+  const el=document.getElementById('calc');
+  if(!ww||!wh){el.innerHTML='<span class="bad">Enter dimensions.</span>';btn.disabled=true;return;}
+  if(aw<=1||ah<=1){el.innerHTML='<span class="bad">Border too large for wall.</span>';btn.disabled=true;return;}
+  const pk=pack();
+  const vert = (orientation==='vertical');
+  const sa=vert?ah:aw, sb=vert?aw:ah;
+  const r=d===1?solve1(sa,sb,pk):solve2(sa,sb,pk);
+  if(!r){el.innerHTML='<span class="bad">Cannot fit slots — reduce border or increase wall size.</span>';btn.disabled=true;return;}
+  btn.disabled=false;
+  const {nc,nr,sf,hg,sh,vg}=r;
+  const {h}=pk;
+  if(d===1){
+    const main=nc*nr,inter=(nc/2)*3*(nr-1);
+    el.innerHTML=`<b>${nc} cols × ${nr} rows</b> — ${main} main + ${inter} inter-row = <b>${main+inter} total</b><br>`+
+      `Main slot ${sf.toFixed(1)} × ${sh.toFixed(1)} mm (str ${(sf-sh).toFixed(1)}, r ${(sh/2).toFixed(1)})<br>`+
+      `Small slot ${(sf*(1-h)/2).toFixed(1)} × ${sh.toFixed(1)} mm · H gap ${hg.toFixed(1)} · V gap ${vg.toFixed(1)} mm`;
+  } else {
+    const hw=(sf-hg)/2,offR=Math.floor(nr/2);
+    const halves=halfEnds?offR*2:0;
+    el.innerHTML=`<b>${nc} cols × ${nr} rows</b> — ${nc*nr} full + ${halves} half = <b>${nc*nr+halves} total</b><br>`+
+      `Full slot ${sf.toFixed(1)} × ${sh.toFixed(1)} mm (str ${(sf-sh).toFixed(1)}, r ${(sh/2).toFixed(1)})<br>`+
+      `Half slot ${hw.toFixed(1)} × ${sh.toFixed(1)} mm · H gap ${hg.toFixed(1)} · V gap ${vg.toFixed(1)} mm`;
+  }
+}
+
+// ── Live SVG preview ─────────────────────────────────────────────
+const PW=480, PH=180, MAR=10;
+const C_MAIN='#3b7fd4', C_INTER='#60a5fa', C_HALF='#f97316', C_WALL='#c8c4bc', C_BORDER='#b8b4ac';
+
+function drawPreview(ww,wh,bw,d,aw,ah) {
+  const svg=document.getElementById('pattern-svg');
+  const leg=document.getElementById('legend');
+
+  if(!ww||!wh||aw<=1||ah<=1){
+    svg.innerHTML='<text x="240" y="90" text-anchor="middle" fill="#aaa" font-size="13" font-family="sans-serif">Enter valid dimensions</text>';
+    leg.innerHTML=''; return;
+  }
+
+  const pk=pack();
+  const vert=(orientation==='vertical');
+  const sa=vert?ah:aw, sb=vert?aw:ah;
+  const res=d===1?solve1(sa,sb,pk):solve2(sa,sb,pk);
+  if(!res){
+    svg.innerHTML='<text x="240" y="90" text-anchor="middle" fill="#aaa" font-size="13" font-family="sans-serif">No solution</text>';
+    leg.innerHTML=''; return;
+  }
+
+  const {nc,nr,sf,hg,sh,vg}=res;
+  const {h}=pk;
+  const slot_r=sh/2, slot_len=sf-sh, pitch=sf+hg;
+  const sf2=sf*(1-h)/2, sl=sf2-2*slot_r;
+
+  const tcols=+(document.getElementById('tile_cols')||{value:1}).value||1;
+  const trows=+(document.getElementById('tile_rows')||{value:1}).value||1;
+  const tgap =+(document.getElementById('tile_gap') ||{value:0}).value||0;
+  const tgp=Math.max(0,tgap);
+
+  const total_w=tcols*ww+(tcols-1)*tgp;
+  const total_h=trows*wh+(trows-1)*tgp;
+  const scale=Math.min((PW-2*MAR)/total_w,(PH-2*MAR)/total_h);
+  const pw=ww*scale, ph=wh*scale;
+  const ox=(PW-total_w*scale)/2;
+  const oy=(PH-total_h*scale)/2;
+
+  function ts(mm){return mm*scale;}
+  function f(n){return n.toFixed(2);}
+  function tx(mm,tc){return ox+tc*(pw+tgp*scale)+mm*scale;}
+  function ty(mm,tr){return oy+tr*(ph+tgp*scale)+(wh-mm)*scale;}
+
+  let x0,y0,rowpitch;
+  if(!vert){
+    const vis_w=nc*pitch-hg;
+    const hu=d===1?2*hg+(2*nr-1)*sh+(2*nr-2)*vg:2*hg+nr*sh+(nr-1)*vg;
+    x0=bw+slot_r+(aw-vis_w)/2; y0=bw+hg+(ah-hu)/2;
+    rowpitch=d===1?2*sh+2*vg:sh+vg;
+  } else {
+    const vis_h=nc*pitch-hg;
+    const wu=d===1?2*hg+(2*nr-1)*sh+(2*nr-2)*vg:2*hg+nr*sh+(nr-1)*vg;
+    x0=bw+hg+(aw-wu)/2; y0=bw+slot_r+(ah-vis_h)/2;
+    rowpitch=d===1?2*sh+2*vg:sh+vg;
+  }
+
+  function dS(xs,yb,len,rm,col,tc,tr){
+    if(!vert){
+      const sx=tx(xs-rm,tc),sy=ty(yb+2*rm,tr);
+      const sw=ts(len+2*rm),sh_=ts(2*rm),rx_=ts(rm);
+      p+=`<rect x="${f(sx)}" y="${f(sy)}" width="${f(sw)}" height="${f(sh_)}" rx="${f(rx_)}" fill="${col}"/>`;
+    } else {
+      const sx=tx(xs,tc),sy=ty(yb+len+rm,tr);
+      const sw=ts(2*rm),sh_=ts(len+2*rm),rx_=ts(rm);
+      p+=`<rect x="${f(sx)}" y="${f(sy)}" width="${f(sw)}" height="${f(sh_)}" rx="${f(rx_)}" fill="${col}"/>`;
+    }
+  }
+
+  let p='',usedMain=false,usedInter=false,usedHalf=false;
+
+  for(let trow=0;trow<trows;trow++){
+    for(let tcol=0;tcol<tcols;tcol++){
+      p+=`<rect x="${f(tx(0,tcol))}" y="${f(ty(wh,trow))}" width="${f(pw)}" height="${f(ph)}" rx="3" fill="${C_WALL}"/>`;
+      if(bw>0) p+=`<rect x="${f(tx(bw,tcol))}" y="${f(ty(wh-bw,trow))}" width="${f(ts(aw))}" height="${f(ts(ah))}" rx="2" fill="${C_BORDER}" stroke="#888" stroke-width="0.8" stroke-dasharray="4,3"/>`;
+
+      if(!vert){
+        if(d===1){
+          for(let row=0;row<nr;row++){
+            const y=y0+row*rowpitch;
+            for(let col=0;col<nc;col++){dS(x0+col*pitch,y,slot_len,slot_r,C_MAIN,tcol,trow);usedMain=true;}
+          }
+          for(let ir=0;ir<nr-1;ir++){
+            const y=y0+sh+vg+ir*rowpitch;
+            for(let t=0;t<nc/2;t++){
+              const bx=x0+t*2*pitch;
+              dS(bx,y,sl,slot_r,C_INTER,tcol,trow);usedInter=true;
+              dS(bx+sf2+hg,y,slot_len,slot_r,C_MAIN,tcol,trow);
+              dS(bx+sf2+hg+sf+hg,y,sl,slot_r,C_INTER,tcol,trow);
+            }
+          }
+        } else {
+          const vis_l=x0-slot_r,vis_r=vis_l+nc*pitch-hg;
+          const hw=sf*(1-h)/2,lstr=hw-slot_r,rstr=hw-2*slot_r;
+          for(let row=0;row<nr;row++){
+            const y=y0+row*rowpitch;
+            if(row%2===0){
+              for(let col=0;col<nc;col++){dS(x0+col*pitch,y,slot_len,slot_r,C_MAIN,tcol,trow);usedMain=true;}
+            } else {
+              for(let col=0;col<nc-1;col++){dS(x0+pitch/2+col*pitch,y,slot_len,slot_r,C_MAIN,tcol,trow);usedMain=true;}
+              if(halfEnds){
+                if(lstr>0){p+=`<rect x="${f(tx(vis_l,tcol))}" y="${f(ty(y+sh,trow))}" width="${f(ts(hw))}" height="${f(ts(sh))}" rx="${f(ts(slot_r))}" fill="${C_HALF}"/>`;usedHalf=true;}
+                if(rstr>0){p+=`<rect x="${f(tx(vis_r-hw,tcol))}" y="${f(ty(y+sh,trow))}" width="${f(ts(hw))}" height="${f(ts(sh))}" rx="${f(ts(slot_r))}" fill="${C_HALF}"/>`;usedHalf=true;}
+              }
+            }
+          }
+        }
+      } else {
+        if(d===1){
+          for(let grp=0;grp<nr;grp++){
+            const x=x0+grp*rowpitch;
+            for(let col=0;col<nc;col++){dS(x,y0+col*pitch,slot_len,slot_r,C_MAIN,tcol,trow);usedMain=true;}
+          }
+          for(let ig=0;ig<nr-1;ig++){
+            const x=x0+sh+vg+ig*rowpitch;
+            for(let t=0;t<nc/2;t++){
+              const by=y0+t*2*pitch;
+              dS(x,by,sl,slot_r,C_INTER,tcol,trow);usedInter=true;
+              dS(x,by+sf2+hg,slot_len,slot_r,C_MAIN,tcol,trow);
+              dS(x,by+sf2+hg+sf+hg,sl,slot_r,C_INTER,tcol,trow);
+            }
+          }
+        } else {
+          // Design 2 vertical
+          // vis_top_field = y0-slot_r (lower Y), vis_bottom_field = y0-slot_r+nc*pitch-hg (higher Y)
+          const vtop=y0-slot_r, vbot=vtop+nc*pitch-hg;
+          const hw2=sf*(1-h)/2, lstr=hw2-slot_r;
+          for(let grp=0;grp<nr;grp++){
+            const x=x0+grp*rowpitch;
+            if(grp%2===0){
+              for(let col=0;col<nc;col++){dS(x,y0+col*pitch,slot_len,slot_r,C_MAIN,tcol,trow);usedMain=true;}
+            } else {
+              for(let col=0;col<nc-1;col++){dS(x,y0+pitch/2+col*pitch,slot_len,slot_r,C_MAIN,tcol,trow);usedMain=true;}
+              if(halfEnds){
+                // Bottom half-slot: flat at vtop (lower Y), round cap goes up
+                if(lstr>0){
+                  const sx=tx(x,tcol), sy=ty(vtop+hw2,trow);
+                  p+=`<rect x="${f(sx)}" y="${f(sy)}" width="${f(ts(sh))}" height="${f(ts(hw2))}" rx="${f(ts(slot_r))}" fill="${C_HALF}"/>`;
+                  usedHalf=true;
+                }
+                // Top half-slot: round cap goes down, flat at vbot (higher Y)
+                const bot_y=vbot-hw2+slot_r;
+                if(hw2-2*slot_r>0){
+                  const sx=tx(x,tcol), sy=ty(vbot,trow);
+                  p+=`<rect x="${f(sx)}" y="${f(sy)}" width="${f(ts(sh))}" height="${f(ts(hw2))}" rx="${f(ts(slot_r))}" fill="${C_HALF}"/>`;
+                  usedHalf=true;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if(tcols>1||trows>1){
+    p+=`<rect x="4" y="4" width="54" height="18" rx="4" fill="#5b9cf6" opacity="0.92"/>`;
+    p+=`<text x="8" y="16" font-family="sans-serif" font-size="11" font-weight="700" fill="white">${tcols}\u00d7${trows} tiles</text>`;
+  }
+
+  svg.innerHTML=p;
+  let li='';
+  if(usedMain)  li+=`<div class="leg-item"><div class="leg-dot" style="background:${C_MAIN}"></div>Main slot</div>`;
+  if(usedInter) li+=`<div class="leg-item"><div class="leg-dot" style="background:${C_INTER}"></div>Inter-row slot</div>`;
+  if(usedHalf)  li+=`<div class="leg-item"><div class="leg-dot" style="background:${C_HALF}"></div>Half-slot</div>`;
+  if(bw>0)      li+=`<div class="leg-item"><div class="leg-dot" style="background:${C_BORDER};border:1px dashed #888"></div>Border zone</div>`;
+  leg.innerHTML=li;
+}
+
+
+async function generate(){
+  const btn=document.getElementById('btn-gen');
+  if(btn.disabled) return;
+  const st=document.getElementById('status');
+  btn.disabled=true; btn.textContent='Generating…'; st.textContent=''; st.className='status';
+  try{
+    const data={
+      wall_w:v('wall_w'), wall_h:v('wall_h'), wall_t:v('wall_t'),
+      border_w:v('border_w'), design:+sv('design'), half_ends:halfEnds,
+      density:+sv('density'), orientation:orientation,
+      tile_cols:+(document.getElementById('tile_cols')||{value:1}).value||1,
+      tile_rows:+(document.getElementById('tile_rows')||{value:1}).value||1,
+      tile_gap:+(document.getElementById('tile_gap')||{value:0}).value||0
+    };
+    const resp=await adsk.fusionSendData('generate',JSON.stringify(data));
+    const res=JSON.parse(resp);
+    if(res.ok){st.textContent='Wall generated successfully.';st.className='status ok';}
+    else{st.textContent='Error: '+(res.error||'unknown');st.className='status err';}
+  }catch(e){
+    st.textContent='Error: '+e;st.className='status err';
+  }
+  btn.disabled=false; btn.textContent='Generate wall';
+}
+function closePanel(){adsk.fusionSendData('close','{}');}
+function openStore(){adsk.fusionSendData('openStore','{}');}
+function applyLicense(p){
+  const note=document.getElementById('sub-note');
+  const btn=document.getElementById('btn-gen');
+  const msg=document.getElementById('sub-msg');
+  if(p.entitled){
+    note.style.display='none';
+    btn.disabled=false;
+    return;
+  }
+  note.style.display='block';
+  msg.textContent=p.license_message||'A Wall Slot Generator subscription is required.';
+  btn.disabled=true;
+}
+async function recheckLicense(){
+  const st=document.getElementById('status');
+  st.textContent='Checking subscription…';
+  st.className='status';
+  try{
+    const resp=await adsk.fusionSendData('recheck','{}');
+    const res=JSON.parse(resp);
+    applyLicense(res);
+    st.textContent=res.entitled?'Subscription confirmed.':'';
+    if(!res.entitled) st.className='status err';
+  }catch(e){
+    st.textContent='Error: '+e;
+    st.className='status err';
+  }
+}
+function showHelp(){
+  document.getElementById('help-overlay').style.display='block';
+}
+function hideHelp(){
+  document.getElementById('help-overlay').style.display='none';
+}
+function showPrivacy(){
+  document.getElementById('privacy-overlay').style.display='block';
+}
+function hidePrivacy(){
+  document.getElementById('privacy-overlay').style.display='none';
+}
+
+// ── Init from Python ──────────────────────────────────────────────
+window.fusionJavaScriptHandler={
+  handle:function(action,data){
+    if(action==='init'){
+      const p=JSON.parse(data);
+      ['wall_w','wall_h','wall_t','border_w'].forEach(k=>{
+        if(p[k]!==undefined) document.getElementById(k).value=p[k];
+      });
+      document.getElementById('design').value=p.design||1;
+      if (p.density !== undefined) {
+        document.getElementById('density').value = Math.round(p.density);
+        document.getElementById('spk-tag').textContent = densityLabel(p.density);
+      }
+      if (p.orientation) setOrientation(p.orientation);
+      if (p.tile_cols) document.getElementById('tile_cols').value = Math.round(p.tile_cols);
+      if (p.tile_rows) document.getElementById('tile_rows').value = Math.round(p.tile_rows);
+      if (p.tile_gap !== undefined) document.getElementById('tile_gap').value = p.tile_gap;
+      halfEnds=!!p.half_ends;
+      document.getElementById('tog').classList.toggle('on',halfEnds);
+      applyLicense(p);
+      update();
+    }
+    return'';
+  }
+};
+
+update();
+</script>
+</body>
+</html>

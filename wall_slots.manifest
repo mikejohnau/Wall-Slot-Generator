@@ -1,0 +1,13 @@
+{
+    "autodeskProduct": "Fusion360",
+    "type": "addin",
+    "author": "Michael Johnson",
+    "description": {
+        "": "Instantly generates optimised slot-wall panels from wall size and border width. Two designs, live preview, auto-calculated proportions. No manual sketching."
+    },
+    "version": "1.1.0",
+    "runOnStartup": true,
+    "supportedOS": "windows|mac",
+    "editEnabled": true,
+	"iconFilename": "icon.svg"
+}
